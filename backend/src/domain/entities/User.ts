@@ -3,7 +3,7 @@ export interface User {
     name: string,
     surname: string,
     email: string,
-    passwordHash: string,
+    password: string,
     role: string,
     created_at: Date
 }
