@@ -1,6 +1,7 @@
 import { ValidationError, AuthorizationError, NoAccess, NotFoundError } from '../errors/errors.js'
 import validator from 'validator'
 import type * as Interfaces from '../ports/authPorts.js'
+import type { NewUser } from '../../domain/entities/User.js';
 
 export async function loginService(email: string, password: string, userRepository: Interfaces.IuserRepository, passwordHasher: Interfaces.IpasswordHasher, generateTokens: Interfaces.ItokenGeneration, createRefreshToken: Interfaces.IrefreshTokensRepository)
 {
@@ -11,9 +12,8 @@ export async function loginService(email: string, password: string, userReposito
         }
 
         email = email.trim();
-        password = password.trim();
 
-        if(!email || !password)
+        if(!email)
         {
             throw new ValidationError("Wprowadź dane");
         }
@@ -72,9 +72,8 @@ export async function registerService(name: string, surname: string, email: stri
         surname = surname.trim()
         name = name.trim()
         email = email.trim()
-        password = password.trim()
 
-        if(!name || !surname || !email || !password)
+        if(!name || !surname || !email)
         {
             throw new ValidationError("Wprowadź dane")
         }
@@ -119,7 +118,7 @@ export async function registerService(name: string, surname: string, email: stri
     {
         const match = await userRepository.findByEmail(email)
 
-        if(!match)
+        if(match)
         {
             throw new ValidationError("E-mail jest już zajęty")
         }
@@ -140,11 +139,53 @@ export async function registerService(name: string, surname: string, email: stri
     }
 }
 
-export async function registerEndService(email: string, code: number)
+export async function registerEndService(email: string, code: string, emailVerificationRepository: Interfaces.IemailVerificationRepository, userRepository: Interfaces.IuserRepository, createUserTransactionRepository: Interfaces.IcreateUserTransaction)
 {
+    if(!email || !code)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
+
+    email = email.trim()
+    code = code.trim()
+
+    if(!email || !code)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
+
     try
     {
+        const data = await emailVerificationRepository.takeEmailVerificationData(email)
 
+        if(!data)
+        {
+            throw new ValidationError("Nieprawidłowy kod")
+        }
+        else if(code != data.code)
+        {
+            throw new ValidationError("Nieprawidłowy kod")
+        }
+        else if(data.expires_at < new Date())
+        {
+            throw new ValidationError("Kod wygasł")
+        }
+
+        const user: NewUser = {
+            name: data.name,
+            surname: data.surname,
+            email: data.email,
+            password: data.password
+        }
+
+        const result = await userRepository.findByEmail(email)
+
+        if(result)
+        {
+            throw new AuthorizationError("Email jest zajęty")
+        }
+
+        await createUserTransactionRepository.createUserTransaction(user)
     }
     catch(err)
     {
@@ -154,6 +195,22 @@ export async function registerEndService(email: string, code: number)
 
 export async function forgotPasswordService(email:string)
 {
+    if(!email)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
+
+    email = email.trim();
+
+    if(!email)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
+    else if(!validator.isEmail(email))
+    {
+        throw new ValidationError("Podany adres e-mail najprawdopodobniej nie jest adresem e-mail")
+    }
+
     try
     {
 
@@ -166,6 +223,33 @@ export async function forgotPasswordService(email:string)
 
 export async function resetPasswordService(password: string, token: string)
 {
+    if(!password || !token)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
+
+    password = password.trim()
+    token = token.trim()
+
+    if(!password || !token)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
+
+    if(!validator.isStrongPassword(password, {
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 0,
+        minLength: 8
+    }))
+    {
+        throw new ValidationError("Hasło musi zawierać co najmniej jedną małą, dużą literę, jedną cyfrę oraz minimum 8 znaków")
+    }
+    if (Buffer.byteLength(password, 'utf8') > 72) {
+        throw new ValidationError("Hasło jest zbyt długie");
+    }
+
     try
     {
 
@@ -179,6 +263,18 @@ export async function resetPasswordService(password: string, token: string)
 
 export async function refreshService(refreshToken: string)
 {
+    if(!refreshToken)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
+
+    refreshToken = refreshToken.trim()
+
+    if(!refreshToken)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
+
     try
     {
 
@@ -191,6 +287,17 @@ export async function refreshService(refreshToken: string)
 
 export async function logoutService(refreshToken: string, allDevices: boolean)
 {
+    if(!refreshToken)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
+
+    refreshToken = refreshToken.trim()
+
+    if(!refreshToken)
+    {
+        throw new ValidationError("Wprowadź dane")
+    }
     try
     {
 

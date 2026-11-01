@@ -3,6 +3,7 @@ import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import { connectDatabase } from "../infrastructure/database/db.js"
+import authRoutes from './routes/authRoutes.js'
 
 const app = express();
 
@@ -20,5 +21,6 @@ app.use(cors({
 connectDatabase();
 
 //routy
+app.use("/auth", authRoutes)
 
 export default app;

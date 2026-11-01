@@ -1,9 +1,10 @@
-import type {User} from '../../domain/entities/User.js'
+import type {NewUser, User, emailVerification} from '../../domain/entities/User.js'
 
 export interface IuserRepository
 {
     findByEmail(email: string): Promise<User | null>;
     findById(user_id: number): Promise<User | null>;
+    createUser(user: NewUser): Promise<void>;
 }
 
 export interface IrefreshTokensRepository
@@ -15,6 +16,12 @@ export interface IemailVerificationRepository
 {
     createEmailVerificatonData(name: string, surname: string, email: string, password: string, code: string, expires_at: Date): Promise<void>;
     deleteEmailVerificationData(email: string): Promise<void>
+    takeEmailVerificationData(email: string): Promise<emailVerification>
+}
+
+export interface IcreateUserTransaction
+{
+    createUserTransaction(user: NewUser): Promise<void>;
 }
 
 

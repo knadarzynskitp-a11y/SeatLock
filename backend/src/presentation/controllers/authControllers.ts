@@ -56,7 +56,11 @@ export async function registerEndController(req: Request, res: Response)
 {
     try
     {
+        const {email, code} = req.body;
 
+        await Service.registerEndService(email, code, Repo.emailVerificationRepository, Repo.userRepository, Repo.createUserTransactionRepository)
+
+        return res.json({success: true})
     }
     catch(err)
     {
