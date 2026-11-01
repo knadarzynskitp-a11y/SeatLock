@@ -35,3 +35,11 @@ export class NoAccess extends AppError {
         this.name = "NoAccessError"
     }
 }
+
+export class AuthorizationError extends AppError
+{
+    constructor(message: string){
+        super(message, 401)
+        this.name = "AuthorizationError"
+    }
+}
