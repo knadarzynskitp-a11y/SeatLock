@@ -1,7 +1,7 @@
 import { ValidationError, AuthorizationError, NoAccess, NotFoundError } from '../errors/errors.js'
 import validator from 'validator'
 import type * as Interfaces from '../ports/authPorts.js'
-import type { NewUser } from '../../domain/entities/User.js';
+import type { NewUser, newResetPassword } from '../../domain/entities/User.js';
 
 export async function loginService(email: string, password: string, userRepository: Interfaces.IuserRepository, passwordHasher: Interfaces.IpasswordHasher, generateTokens: Interfaces.ItokenGeneration, createRefreshToken: Interfaces.IrefreshTokensRepository)
 {
@@ -193,7 +193,7 @@ export async function registerEndService(email: string, code: string, emailVerif
     }
 }
 
-export async function forgotPasswordService(email:string)
+export async function forgotPasswordService(email:string, userRepository: Interfaces.IuserRepository, cryptoNumber: Interfaces.Icrypto, resetPasswordRepository: Interfaces.IresetPasswordRepository, sendMail: Interfaces.IemailSend)
 {
     if(!email)
     {
@@ -213,7 +213,30 @@ export async function forgotPasswordService(email:string)
 
     try
     {
+        const match = await userRepository.findByEmail(email)
 
+        if(!match)
+        {
+            return;
+        }
+
+        const resetToken = await cryptoNumber.randomBytes(32)
+        const resetLink = process.env.URL+`/reset-password/`+resetToken;
+        const expires_at = new Date(Date.now() + 10 * 60 * 1000);
+
+        const hashedResetToken = await cryptoNumber.createHash(resetToken);
+
+        const resetPassword: newResetPassword = {
+            user_id: match.id,
+            resetToken: hashedResetToken,
+            expires_at
+        }
+
+        await resetPasswordRepository.deleteResetPasswordData(match.id)
+
+        await resetPasswordRepository.createResetPasswordData(resetPassword)
+
+        await sendMail.sendResetMail(email, resetLink)
     }
     catch(err)
     {

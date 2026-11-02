@@ -22,3 +22,14 @@ export interface emailVerification
     expires_at: Date,
     created_at: Date
 }
+
+export interface ResetPassword 
+{
+    id: number,
+    user_id: number,
+    resetToken: string,
+    expires_at: Date,
+    created_at: Date
+}
+
+export type newResetPassword = Omit<ResetPassword, "id" | "created_at">;

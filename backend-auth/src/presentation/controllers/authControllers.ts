@@ -72,7 +72,11 @@ export async function forgotPasswordController(req: Request, res: Response)
 {
     try
     {
+        const email = req.body;
 
+        await Service.forgotPasswordService(email, Repo.userRepository, cryptoNumber, Repo.resetPasswordRepository, sendMail)
+
+        return res.json({success:true, message: "Jeśli email istnieje, wysłalismy na niego wiadomość"})
     }
     catch(err)
     {

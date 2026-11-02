@@ -1,4 +1,4 @@
-import type {NewUser, User, emailVerification} from '../../domain/entities/User.js'
+import type {NewUser, User, emailVerification, newResetPassword} from '../../domain/entities/User.js'
 
 export interface IuserRepository
 {
@@ -24,6 +24,12 @@ export interface IcreateUserTransaction
     createUserTransaction(user: NewUser): Promise<void>;
 }
 
+export interface IresetPasswordRepository
+{
+    createResetPasswordData(data: newResetPassword): Promise<void>;
+    deleteResetPasswordData(user_id: number): Promise<void>;
+}
+
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -40,11 +46,14 @@ export interface IpasswordHasher
 export interface Icrypto
 {
     randomInt(number1: number, number2: number): Promise<string>;
+    randomBytes(number: number): Promise<string>;
+    createHash(token: string): Promise<string>;
 }
 
 export interface IemailSend
 {
     sendMail(email: string, code: string): Promise<void>;
+    sendResetMail(email: string, resetLink: string): Promise<void>;
 }
 
 //-----------------------------tokens------------------------------------------------------------------

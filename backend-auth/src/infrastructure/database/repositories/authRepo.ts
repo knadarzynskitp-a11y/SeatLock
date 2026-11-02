@@ -92,3 +92,18 @@ export const createUserTransactionRepository: Interfaces.IcreateUserTransaction 
         }
     },
 }
+
+export const resetPasswordRepository: Interfaces.IresetPasswordRepository = {
+    async createResetPasswordData(data) {
+        await pool.query(
+            "INSERT INTO resetPassword (user_id, resetToken, expires_at) VALUES ($1, $2, $3)",
+            [data.user_id, data.resetToken, data.resetToken]
+        )
+    },
+    async deleteResetPasswordData(user_id) {
+        await pool.query(
+            "DELETE FROM resetPassword WHERE user_id=$1",
+            [user_id]
+        )
+    },
+}
