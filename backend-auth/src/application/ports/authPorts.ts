@@ -1,4 +1,4 @@
-import type {NewUser, User, emailVerification, newResetPassword, ResetPassword} from '../../domain/entities/User.js'
+import type {NewUser, User, emailVerification, newResetPassword, ResetPassword, refreshToken, newRefreshToken} from '../../domain/entities/User.js'
 
 export interface IuserRepository
 {
@@ -11,6 +11,9 @@ export interface IuserRepository
 export interface IrefreshTokensRepository
 {
     createRefreshToken(hashedRefreshToken: string, expires_at: Date, user_id: number): Promise<void>;
+    takeRefreshTokenByToken(hashedRefreshToken: string): Promise<refreshToken>;
+    deleteRefreshTokenByToken(hashedRefreshToken: string): Promise<void>
+    deleteRefreshTokenById(user_id: number): Promise<void>
 }
 
 export interface IemailVerificationRepository

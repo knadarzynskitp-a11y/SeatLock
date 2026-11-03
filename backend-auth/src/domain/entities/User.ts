@@ -33,3 +33,14 @@ export interface ResetPassword
 }
 
 export type newResetPassword = Omit<ResetPassword, "id" | "created_at">;
+
+export interface refreshToken
+{
+    id: number,
+    user_id: number,
+    refreshToken: string,
+    expires_at: Date,
+    created_at: Date
+}
+
+export type newRefreshToken = Omit<refreshToken, "id" | "created_at">;

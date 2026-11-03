@@ -6,6 +6,7 @@ import { passwordHasher } from "../../infrastructure/security/bcrypt.js";
 import { generateTokens } from "../../infrastructure/security/jwt.js";
 import { cryptoNumber } from "../../infrastructure/security/crypto.js";
 import {sendMail} from '../../infrastructure/security/nodemailer.js'
+import { ValidationError } from "../../application/errors/errors.js";
 export async function loginController(req: Request, res: Response)
 {
     try
@@ -105,10 +106,26 @@ export async function refreshController(req: Request, res: Response)
 {
     try
     {
+        const {refreshToken} = req.cookies;
 
+        const result = await Service.refreshService(refreshToken, cryptoNumber, Repo.refreshTokenRepository, generateTokens, Repo.userRepository)
+
+        return res.cookie("refreshToken", result.refreshToken, {
+            httpOnly: true,
+            secure: process.env.STACK === 'production',
+            sameSite: "strict",
+            maxAge: 90 * 24 * 60 * 60 * 1000,
+        }).cookie("accessToken", result.accessToken, {
+            httpOnly: true,
+            secure: process.env.STACK === 'production',
+            sameSite: "strict",
+            maxAge: 15 * 60 * 1000}).json({
+            success: true
+        })
     }
     catch(err)
     {
+        clearCookie(res)
         errorFunction(res, err)
     }
 }
@@ -117,12 +134,44 @@ export async function logoutController(req: Request, res: Response)
 {
     try
     {
+        const {refreshToken} = req.params;
+        const {allDevices} = req.body;
 
+        if (typeof refreshToken !== "string") {
+            throw new ValidationError("Nieprawidlowy Token")
+            }
+
+        await Service.logoutService(refreshToken, allDevices, Repo.refreshTokenRepository, cryptoNumber)
+
+        clearCookie(res)
+
+        return res.json({success: true})
     }
     catch(err)
     {
+        clearCookie(res)
         errorFunction(res, err)
     }
+}
+
+
+
+
+function clearCookie(res: Response)
+{
+    res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: process.env.STACK === "production",
+        sameSite: "strict",
+        path: "/"
+    });
+
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: process.env.STACK === "production",
+        sameSite: "strict",
+        path: "/"
+    });
 }
 
 

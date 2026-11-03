@@ -299,7 +299,7 @@ export async function resetPasswordService(password: string, token: string, cryp
 }
 
 
-export async function refreshService(refreshToken: string)
+export async function refreshService(refreshToken: string, cryptoNumber: Interfaces.Icrypto, refreshTokenRepository: Interfaces.IrefreshTokensRepository, generateTokens: Interfaces.ItokenGeneration, userRepository: Interfaces.IuserRepository)
 {
     if(!refreshToken)
     {
@@ -315,7 +315,34 @@ export async function refreshService(refreshToken: string)
 
     try
     {
+        const hashedRefreshToken = await cryptoNumber.createHash(refreshToken);
 
+        const match = await refreshTokenRepository.takeRefreshTokenByToken(hashedRefreshToken)
+
+        const user = await userRepository.findById(match.user_id)
+
+        if(!match)
+        {
+            throw new AuthorizationError("Nieprawidłowy token")
+        }
+        else if(match.expires_at < new Date())
+        {
+            throw new AuthorizationError("Token wygasł")
+        }
+
+        const user_id = Number(user?.id);
+        const role = String(user?.role);
+
+        const tokens = await generateTokens.generateTokens({user_id, role})
+
+        await refreshTokenRepository.deleteRefreshTokenByToken(hashedRefreshToken);
+
+        await refreshTokenRepository.createRefreshToken(tokens.hashedRefreshToken, tokens.expires_at, user_id)
+
+        return {
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken
+        }
     }
     catch(err)
     {
@@ -323,7 +350,7 @@ export async function refreshService(refreshToken: string)
     }
 }
 
-export async function logoutService(refreshToken: string, allDevices: boolean)
+export async function logoutService(refreshToken: string, allDevices: boolean, refreshTokenRepository: Interfaces.IrefreshTokensRepository, cryptoNumber: Interfaces.Icrypto)
 {
     if(!refreshToken)
     {
@@ -339,6 +366,23 @@ export async function logoutService(refreshToken: string, allDevices: boolean)
     try
     {
 
+        const hashedRefreshToken = await cryptoNumber.createHash(refreshToken)
+
+        if(allDevices)
+        {
+            const data = await refreshTokenRepository.takeRefreshTokenByToken(hashedRefreshToken)
+
+            if(!data)
+            {
+                throw new NoAccess("Brak uprawnień do wylogowania użytkownika")
+            }
+
+            await refreshTokenRepository.deleteRefreshTokenById(data.user_id)
+        }
+        else
+        {
+            await refreshTokenRepository.deleteRefreshTokenByToken(hashedRefreshToken)
+        }
     }
     catch(err)
     {
