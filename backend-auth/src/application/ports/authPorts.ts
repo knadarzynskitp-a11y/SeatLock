@@ -1,10 +1,11 @@
-import type {NewUser, User, emailVerification, newResetPassword} from '../../domain/entities/User.js'
+import type {NewUser, User, emailVerification, newResetPassword, ResetPassword} from '../../domain/entities/User.js'
 
 export interface IuserRepository
 {
     findByEmail(email: string): Promise<User | null>;
     findById(user_id: number): Promise<User | null>;
     createUser(user: NewUser): Promise<void>;
+    updateUser(password: string, user_id: number): Promise<void>;
 }
 
 export interface IrefreshTokensRepository
@@ -28,9 +29,13 @@ export interface IresetPasswordRepository
 {
     createResetPasswordData(data: newResetPassword): Promise<void>;
     deleteResetPasswordData(user_id: number): Promise<void>;
+    takeResetPasswordDataByToken(resetToken: string): Promise<ResetPassword>;
 }
 
-
+export interface IcreateResetTransaction
+{
+    createResetTransaction(password: string, user_id:number): Promise<void>
+}
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 

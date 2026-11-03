@@ -2,6 +2,7 @@ import { ValidationError, AuthorizationError, NoAccess, NotFoundError } from '..
 import validator from 'validator'
 import type * as Interfaces from '../ports/authPorts.js'
 import type { NewUser, newResetPassword } from '../../domain/entities/User.js';
+import { deepStrictEqual } from 'node:assert';
 
 export async function loginService(email: string, password: string, userRepository: Interfaces.IuserRepository, passwordHasher: Interfaces.IpasswordHasher, generateTokens: Interfaces.ItokenGeneration, createRefreshToken: Interfaces.IrefreshTokensRepository)
 {
@@ -244,17 +245,16 @@ export async function forgotPasswordService(email:string, userRepository: Interf
     }
 }
 
-export async function resetPasswordService(password: string, token: string)
+export async function resetPasswordService(password: string, token: string, cryptoNumber: Interfaces.Icrypto, resetPasswordRepository: Interfaces.IresetPasswordRepository, passwordHasher: Interfaces.IpasswordHasher, createResetTransactionRepository: Interfaces.IcreateResetTransaction)
 {
     if(!password || !token)
     {
         throw new ValidationError("Wprowadź dane")
     }
 
-    password = password.trim()
     token = token.trim()
 
-    if(!password || !token)
+    if(!token)
     {
         throw new ValidationError("Wprowadź dane")
     }
@@ -275,7 +275,22 @@ export async function resetPasswordService(password: string, token: string)
 
     try
     {
+        const hashedResetToken = await cryptoNumber.createHash(token);
 
+        const data = await resetPasswordRepository.takeResetPasswordDataByToken(hashedResetToken)
+
+        if(!data)
+        {
+            throw new ValidationError("Nieprawidłowy token")
+        }
+        else if(data.expires_at < new Date())
+        {
+            throw new ValidationError("Token wygasł")
+        }
+
+        const hashedPassword = await passwordHasher.hash(password);
+
+        await createResetTransactionRepository.createResetTransaction(password, data.id)
     }
     catch(err)
     {

@@ -1,5 +1,5 @@
 import {pool} from '../db.js'
-import type {User, emailVerification} from '../../../domain/entities/User.js'
+import type {User, emailVerification, ResetPassword} from '../../../domain/entities/User.js'
 import type * as Interfaces from '../../../application/ports/authPorts.js'
 
 export const userRepository: Interfaces.IuserRepository = {
@@ -26,7 +26,14 @@ export const userRepository: Interfaces.IuserRepository = {
             "INSERT INTO users(name, surname, email, password) VALUES ($1, $2, $3, $4)",
             [user.name, user.surname, user.email, user.password]
         )
-    }
+    },
+
+    async updateUser(password, user_id) {
+        await pool.query(
+            "UPDATE users SET password=$1 WHERE user_id =$2",
+            [password, user_id]
+        )
+    },
 }
 
 export const refreshTokenRepository: Interfaces.IrefreshTokensRepository = {
@@ -105,5 +112,49 @@ export const resetPasswordRepository: Interfaces.IresetPasswordRepository = {
             "DELETE FROM resetPassword WHERE user_id=$1",
             [user_id]
         )
+    },
+    async takeResetPasswordDataByToken(resetToken) {
+        const result = await pool.query<ResetPassword>(
+            "SELECT * FROM resetPassword WHERE resetToken=$1",
+            [resetToken]
+        );
+        return result.rows[0] ?? null;
+    }
+}
+
+export const createResetTransactionRepository: Interfaces.IcreateResetTransaction = {
+    async createResetTransaction(password, user_id) {
+        const client = await pool.connect();
+
+        try
+        {
+            await client.query("BEGIN");
+
+            await client.query(
+                "UPDATE users SET password=$1 WHERE id=$2",
+                [password, user_id]
+            );
+
+            await client.query(
+                "DELETE FROM resetpassword WHERE user_id=$1",
+                [user_id]
+            );
+
+            await client.query(
+                "DELETE FROM refreshtokens WHERE user_id=$1",
+                [user_id]
+            );
+
+            await client.query("COMMIT")
+        }
+        catch(err)
+        {
+            client.query("ROLLBACK");
+            throw err;
+        }
+        finally
+        {
+            client.release();
+        }
     },
 }

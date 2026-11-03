@@ -88,7 +88,11 @@ export async function resetPasswordController(req: Request, res: Response)
 {
     try
     {
+        const {token, password} = req.body;
 
+        await Service.resetPasswordService(password, token, cryptoNumber, Repo.resetPasswordRepository, passwordHasher, Repo.createResetTransactionRepository)
+
+        return res.json({success: true, message: "Konto utworzone"});
     }
     catch(err)
     {
