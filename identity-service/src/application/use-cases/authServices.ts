@@ -290,7 +290,7 @@ export async function resetPasswordService(password: string, token: string, cryp
 
         const hashedPassword = await passwordHasher.hash(password);
 
-        await createResetTransactionRepository.createResetTransaction(password, data.id)
+        await createResetTransactionRepository.createResetTransaction(hashedPassword, data.user_id)
     }
     catch(err)
     {
@@ -319,8 +319,6 @@ export async function refreshService(refreshToken: string, cryptoNumber: Interfa
 
         const match = await refreshTokenRepository.takeRefreshTokenByToken(hashedRefreshToken)
 
-        const user = await userRepository.findById(match.user_id)
-
         if(!match)
         {
             throw new AuthorizationError("Nieprawidłowy token")
@@ -328,6 +326,13 @@ export async function refreshService(refreshToken: string, cryptoNumber: Interfa
         else if(match.expires_at < new Date())
         {
             throw new AuthorizationError("Token wygasł")
+        }
+
+        const user = await userRepository.findById(match.user_id)
+
+        if(!user)
+        {
+            throw new AuthorizationError("Nieprawidłowe ID")
         }
 
         const user_id = Number(user?.id);

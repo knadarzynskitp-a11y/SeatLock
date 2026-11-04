@@ -73,7 +73,7 @@ export async function forgotPasswordController(req: Request, res: Response)
 {
     try
     {
-        const email = req.body;
+        const {email} = req.body;
 
         await Service.forgotPasswordService(email, Repo.userRepository, cryptoNumber, Repo.resetPasswordRepository, sendMail)
 
@@ -134,7 +134,7 @@ export async function logoutController(req: Request, res: Response)
 {
     try
     {
-        const {refreshToken} = req.params;
+        const {refreshToken} = req.cookies;
         const {allDevices} = req.body;
 
         if (typeof refreshToken !== "string") {

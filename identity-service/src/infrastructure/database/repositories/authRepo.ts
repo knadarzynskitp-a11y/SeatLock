@@ -62,7 +62,7 @@ export const refreshTokenRepository: Interfaces.IrefreshTokensRepository = {
 
     async deleteRefreshTokenById(user_id) {
         await pool.query(
-            "DELETE FROM refreshToken WHERE user_id=$1",
+            "DELETE FROM refreshTokens WHERE user_id=$1",
             [user_id]
         )
     }
@@ -126,7 +126,7 @@ export const resetPasswordRepository: Interfaces.IresetPasswordRepository = {
     async createResetPasswordData(data) {
         await pool.query(
             "INSERT INTO resetPassword (user_id, resetToken, expires_at) VALUES ($1, $2, $3)",
-            [data.user_id, data.resetToken, data.resetToken]
+            [data.user_id, data.resetToken, data.expires_at]
         )
     },
     async deleteResetPasswordData(user_id) {

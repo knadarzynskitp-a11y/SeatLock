@@ -21,6 +21,6 @@ app.use(cors({
 connectDatabase();
 
 //routy
-app.use("/auth", authRoutes)
+app.use(authRoutes)
 
 export default app;
