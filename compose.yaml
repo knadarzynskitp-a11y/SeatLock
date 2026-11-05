@@ -2,7 +2,7 @@
     api-gateway:
       build: ./api-gateway
       ports: ["3000:3000"]
-      .env_file:
+      env_file:
       - ./api-gateway/.env
       environment:
         REDIS_URL: redis://redis:6379
@@ -13,7 +13,7 @@
     identity-service:
       build: ./identity-service
       ports: "3001:3001"
-      .env_file:
+      env_file:
       - './identity-service/.env'
       environment:
         DB_HOST: identity-db
@@ -60,7 +60,7 @@
         PGPASSWORD: ${DB_PASSWORD}
         PGDATABASE: ${DB_NAME}
       depends_on:
-        db:
+        identity-db:
           condition: service_healthy
       restart: "no"
 
