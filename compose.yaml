@@ -1,0 +1,69 @@
+  services:
+    api-gateway:
+      build: ./api-gateway
+      ports: ["3000:3000"]
+      .env_file:
+      - ./api-gateway/.env
+      environment:
+        REDIS_URL: redis://redis:6379
+      depends_on:
+        redis:
+          condition: service_started
+
+    identity-service:
+      build: ./identity-service
+      ports: "3001:3001"
+      .env_file:
+      - './identity-service/.env'
+      environment:
+        DB_HOST: identity-db
+        DB_PORT: "5432"
+        DB_NAME: identity
+        DB_USER: postgres
+        DB_PASSWORD: ${IDENTITY_DB_PASSWORD}
+      depends_on:
+        identity-db:
+          condition: service_healthy
+        redis:
+          condition: service_started
+
+    identity-db:
+      image: postgres:18
+      environment:
+        POSTGRES_DB: identity
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: ${IDENTITY_DB_PASSWORD}
+      volumes:
+        - identity-data:/var/lib/postgresql
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U postgres -d identity"]
+        interval: 5s
+        timeout: 5s
+        retries: 10
+
+    redis:
+      image: redis:7-alpine
+      restart: unless-stopped
+      ports:
+        - "127.0.0.1:${REDIS_PORT}:6379"
+      volumes:
+        - redis_data:/data
+      command: ["redis-server", "--appendonly", "yes"]
+
+    migrate:
+      build: ./identity-service
+      command: npm run migrate:up
+      environment:
+        PGHOST: db
+        PGPORT: 5432
+        PGUSER: ${DB_USER}
+        PGPASSWORD: ${DB_PASSWORD}
+        PGDATABASE: ${DB_NAME}
+      depends_on:
+        db:
+          condition: service_healthy
+      restart: "no"
+
+  volumes:
+    identity_data:
+    redis_data:
