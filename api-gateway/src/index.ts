@@ -2,8 +2,8 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
-import { authProxy } from './proxy/authProxy.js'
-import { authLimiter } from "./middleware/rateLimit.js";
+import { authProxy, eventProxy } from './proxy/proxy.js'
+import { authLimiter, eventLimiter } from "./middleware/rateLimit.js";
 
 const PORT = process.env.PORT || 3000;
 
@@ -14,6 +14,7 @@ app.use(cors({
     credentials: true
 }))
 app.use('/auth', authLimiter, authProxy)
+app.use('/events', eventLimiter, eventProxy)
 
 app.listen(PORT, () => {
     console.log(`Server api-getaway is running on port ${PORT}`)

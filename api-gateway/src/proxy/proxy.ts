@@ -18,7 +18,24 @@ export const authProxy = createProxyMiddleware({
             }
         }
     }
-})
+});
 
+export const eventProxy = createProxyMiddleware({
+    target: process.env.EVENT_SERVICE_URL ?? "http://event-service:3002",
+    changeOrigin: true,
+    proxyTimeout: 5000,
 
+    on: {
+        error: (err, req, res) => {
+            if ("writeHead" in res && !res.headersSent) {
+                res.writeHead(502, {
+                    "Content-Type": "application/json"
+                });
 
+                res.end(JSON.stringify({
+                    message: "EventService unavailable"
+                }));
+            }
+        }
+    }
+});

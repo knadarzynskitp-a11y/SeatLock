@@ -1,7 +1,9 @@
 import express from 'express'
 import helmet from 'helmet'
-
+import { connectDatabase } from '../infrastructure/database/db.js';
 const app = express();
 app.use(helmet())
 
-export default app
+connectDatabase();
+
+export default app;
