@@ -2,12 +2,14 @@ export interface Event {
     id: number | null;
     name: string;
     price: string;
-    description: string;
+    description?: string;
     startDate: Date;
     endDate: Date;
     hallId: number;
     createdAt: Date;
 }
+
+export type newEvent = Omit<Event, "id" | "createdAt">
 
 export interface Seat {
     id: number | null;
@@ -17,6 +19,8 @@ export interface Seat {
     seatNumber: number;
     createdAt: Date;
 }
+
+export type newSeat = Omit<Seat, "id" | "createdAt">
 
 export interface Hall {
     id: number | null;
@@ -29,3 +33,5 @@ export interface Hall {
     institution: string | null;
     createdAt: Date;
 }
+
+export type newHall = Omit<Hall, "id" | "createdAt">
