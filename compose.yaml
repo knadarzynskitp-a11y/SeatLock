@@ -34,7 +34,7 @@
       - './event-service/.env'
       environment:
         DB_HOST: event-db
-        DB_PORT: "5433"
+        DB_PORT: "5432"
         DB_NAME: event
         DB_USER: postgres
         DB_PASSWORD: ${EVENT_DB_PASSWORD}
@@ -97,6 +97,6 @@
       restart: "no"
 
   volumes:
-    identity_data:
-    event_data:
+    identity-data:
+    event-data:
     redis_data:

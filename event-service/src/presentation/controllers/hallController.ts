@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import  {errorFunction} from '../middleware/errors/errorFunction.js'
 import * as Service from '../../application/use-cases/hallServices.js'
+import * as Repo from '../../infrastructure/database/repository/hallRepo.js'
 
 export async function createHallController(req: Request, res: Response)
 {
@@ -15,7 +16,8 @@ export async function createHallController(req: Request, res: Response)
             city,
             street,
             number,
-            institution
+            institution,
+            Repo.hallRepository
         )
 
         return res.json({success: true})
