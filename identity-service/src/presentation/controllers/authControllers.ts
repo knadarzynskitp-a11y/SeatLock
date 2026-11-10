@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from "express";
+import type { Request, Response } from "express";
 import { errorFunction } from "../middleware/errors/errorFunction.js";
 import * as Service from '../../application/use-cases/authServices.js'
 import * as Repo from '../../infrastructure/database/repositories/authRepo.js'
@@ -27,7 +27,7 @@ export async function loginController(req: Request, res: Response)
             httpOnly: true,
             secure: process.env.STACK === 'production',
             sameSite: "strict",
-            maxAge: 15 * 60 * 1000}).json({
+            maxAge: 15 * 60 * 1000}).status(200).json({
             success: true
         })
     }
@@ -45,7 +45,7 @@ export async function registerController(req: Request, res: Response)
 
         await Service.registerService(name, surname, email, password, Repo.userRepository, passwordHasher, Repo.emailVerificationRepository, cryptoNumber, sendMail)
 
-        return res.json({success: true, message: "Jeśli email istnieje, wyslaliśmy na niego wiadomość"})
+        return res.status(201).json({success: true, message: "Jeśli email istnieje, wyslaliśmy na niego wiadomość"})
     }
     catch(err)
     {
@@ -61,7 +61,7 @@ export async function registerEndController(req: Request, res: Response)
 
         await Service.registerEndService(email, code, Repo.emailVerificationRepository, Repo.userRepository, Repo.createUserTransactionRepository)
 
-        return res.json({success: true})
+        return res.status(201).json({success: true})
     }
     catch(err)
     {
@@ -77,7 +77,7 @@ export async function forgotPasswordController(req: Request, res: Response)
 
         await Service.forgotPasswordService(email, Repo.userRepository, cryptoNumber, Repo.resetPasswordRepository, sendMail)
 
-        return res.json({success:true, message: "Jeśli email istnieje, wysłalismy na niego wiadomość"})
+        return res.status(201).json({success:true, message: "Jeśli email istnieje, wysłalismy na niego wiadomość"})
     }
     catch(err)
     {
@@ -93,7 +93,7 @@ export async function resetPasswordController(req: Request, res: Response)
 
         await Service.resetPasswordService(password, token, cryptoNumber, Repo.resetPasswordRepository, passwordHasher, Repo.createResetTransactionRepository)
 
-        return res.json({success: true, message: "Konto utworzone"});
+        return res.status(201).json({success: true, message: "Konto utworzone"});
     }
     catch(err)
     {
@@ -119,7 +119,7 @@ export async function refreshController(req: Request, res: Response)
             httpOnly: true,
             secure: process.env.STACK === 'production',
             sameSite: "strict",
-            maxAge: 15 * 60 * 1000}).json({
+            maxAge: 15 * 60 * 1000}).status(200).json({
             success: true
         })
     }
@@ -145,7 +145,7 @@ export async function logoutController(req: Request, res: Response)
 
         clearCookie(res)
 
-        return res.json({success: true})
+        return res.status(200).json({success: true})
     }
     catch(err)
     {
@@ -154,7 +154,7 @@ export async function logoutController(req: Request, res: Response)
     }
 }
 
-export async function requireBeLoggedController(req: Request, res: Response, next: NextFunction)
+export async function requireBeLoggedController(req: Request, res: Response)
 {
     const {accessToken} = req.cookies;
 
@@ -162,11 +162,7 @@ export async function requireBeLoggedController(req: Request, res: Response, nex
     {
          const data = await Service.requireBeLoggedService(accessToken, generateTokens);
 
-         res.locals.user_id = data.user_id;
-
-         next()
-
-         return res.json({success: true, data})
+         return res.status(200).json({success: true, data})
     }
     catch(err)
     {

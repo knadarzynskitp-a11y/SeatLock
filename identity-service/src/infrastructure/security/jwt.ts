@@ -27,7 +27,21 @@ export const generateTokens: ItokenGeneration = {
         }
     },
     async verifyToken(accessToken) {
-        const data = jwt.verify(accessToken, process.env.JWT_SECRET!)
+        let data;
+
+        try
+        {
+            data = jwt.verify(accessToken, process.env.JWT_SECRET!)
+        }
+        catch (err)
+        {
+            if (err instanceof jwt.JsonWebTokenError)
+            {
+                throw new AuthorizationError("Zaloguj się")
+            }
+
+            throw err;
+        }
 
         if (typeof data !== 'object' || data === null || typeof data.user_id !== 'number' || typeof data.role !== 'string') {
             throw new AuthorizationError("Zaloguj się")

@@ -20,7 +20,7 @@ export async function createHallController(req: Request, res: Response)
             Repo.hallRepository
         )
 
-        return res.json({success: true})
+        return res.status(201).json({success: true})
     }
     catch(err)
     {
