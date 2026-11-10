@@ -165,6 +165,8 @@ export async function requireBeLoggedController(req: Request, res: Response, nex
          res.locals.user_id = data.user_id;
 
          next()
+
+         return res.json({success: true, data})
     }
     catch(err)
     {
