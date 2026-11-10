@@ -394,3 +394,38 @@ export async function logoutService(refreshToken: string, allDevices: boolean, r
         throw err;
     }
 }
+
+
+export async function requireBeLoggedService(accessToken: string, generateTokens: Interfaces.ItokenGeneration)
+{
+    try
+    {
+        if(!accessToken)
+        {
+            throw new ValidationError("Wprowadź dane")
+        }
+
+        accessToken = accessToken.trim()
+
+        if(!accessToken)
+        {
+            throw new ValidationError("Wprowadź dane")
+        }
+
+        const data = await generateTokens.verifyToken(accessToken)
+        
+        if(!data)
+        {
+            throw new AuthorizationError("Zaloguj się")
+        }
+
+        return {
+            user_id: data.user_id,
+            role: data.role
+        }
+    }
+    catch(err)
+    {
+        throw err;
+    }
+}

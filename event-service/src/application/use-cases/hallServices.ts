@@ -1,5 +1,4 @@
 import type {Hall, newHall } from '../../domain/entities/entities.js'
-import { errorFunction } from '../../presentation/middleware/errors/errorFunction.js'
 import { ValidationError } from '../errors/errors.js'
 import { IhallRepository } from '../ports/hallPorts.js'
 

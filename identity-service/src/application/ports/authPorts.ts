@@ -83,4 +83,5 @@ export interface TokenPair
 export interface ItokenGeneration
 {
     generateTokens(payload: TokenPayload): Promise<TokenPair>;
+    verifyToken(accessToken: string): Promise<TokenPayload>;
 }

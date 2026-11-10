@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { errorFunction } from "../middleware/errors/errorFunction.js";
 import * as Service from '../../application/use-cases/authServices.js'
 import * as Repo from '../../infrastructure/database/repositories/authRepo.js'
@@ -150,6 +150,24 @@ export async function logoutController(req: Request, res: Response)
     catch(err)
     {
         clearCookie(res)
+        errorFunction(res, err)
+    }
+}
+
+export async function requireBeLoggedController(req: Request, res: Response, next: NextFunction)
+{
+    const {accessToken} = req.cookies;
+
+    try
+    {
+         const data = await Service.requireBeLoggedService(accessToken, generateTokens);
+
+         res.locals.user_id = data.user_id;
+
+         next()
+    }
+    catch(err)
+    {
         errorFunction(res, err)
     }
 }

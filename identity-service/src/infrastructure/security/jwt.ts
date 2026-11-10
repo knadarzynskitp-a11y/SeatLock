@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { AuthorizationError } from '../../application/errors/errors.js'
 import type { ItokenGeneration } from '../../application/ports/authPorts.js'
 import crypto from 'crypto'
 
@@ -25,4 +26,13 @@ export const generateTokens: ItokenGeneration = {
             expires_at
         }
     },
+    async verifyToken(accessToken) {
+        const data = jwt.verify(accessToken, process.env.JWT_SECRET!)
+
+        if (typeof data !== 'object' || data === null || typeof data.user_id !== 'number' || typeof data.role !== 'string') {
+            throw new AuthorizationError("Zaloguj się")
+        }
+
+        return { user_id: data.user_id, role: data.role }
+    }, 
 }

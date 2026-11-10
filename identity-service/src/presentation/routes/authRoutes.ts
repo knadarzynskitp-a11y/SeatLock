@@ -10,5 +10,6 @@ router.post('/forgot-password', Controllers.forgotPasswordController)
 router.post('/reset-password', Controllers.resetPasswordController)
 router.get('/refresh', Controllers.refreshController)
 router.post('/logout', Controllers.logoutController)
+router.get('/logged', Controllers.requireBeLoggedController)
 
 export default router
