@@ -82,7 +82,7 @@
         - redis_data:/data
       command: ["redis-server", "--appendonly", "yes"]
 
-    migrate:
+    migrate-identity:
       build: ./identity-service
       command: npm run migrate:up
       environment:
@@ -96,6 +96,19 @@
           condition: service_healthy
       restart: "no"
 
+    migrate-event:
+      build: ./event-service
+      command: npm run migrate:up
+      environment:
+        PGHOST: db
+        PGPORT: 5432
+        PGUSER: ${DB_USER}
+        PGPASSWORD: ${DB_PASSWORD}
+        PGDATABASE: ${DB_NAME}
+      depends_on:
+        event-db:
+          condition: service_healthy
+      restart: "no"
   volumes:
     identity-data:
     event-data:
