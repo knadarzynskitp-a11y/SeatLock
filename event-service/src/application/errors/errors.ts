@@ -43,3 +43,12 @@ export class AuthorizationError extends AppError
         this.name = "AuthorizationError"
     }
 }
+
+export class ConflictError extends AppError
+{
+    constructor(message: string)
+    {
+        super(message, 409)
+        this.name = "ConflictError"
+    }
+}

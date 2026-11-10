@@ -1,6 +1,76 @@
-import type {Hall, newHall } from '../../domain/entities/entities.js'
+import type {newHall, newSeat, SeatRow } from '../../domain/entities/entities.js'
 import { ValidationError } from '../errors/errors.js'
-import { IhallRepository } from '../ports/hallPorts.js'
+import type { IhallRepository, IseatRepository } from '../ports/hallPorts.js'
+
+export async function createSeatsService(
+    hallId: number,
+    sector: string,
+    rows: SeatRow[],
+    seatRepository: IseatRepository
+)
+{
+    if (!Number.isInteger(hallId) || hallId < 1 || hallId > 2147483647)
+    {
+        throw new ValidationError("Podaj prawidłowe ID sali");
+    }
+
+    if (typeof sector !== "string" || !sector.trim() || sector.trim().length > 100)
+    {
+        throw new ValidationError("Nazwa sektora musi mieć od 1 do 100 znaków");
+    }
+
+    sector = sector.trim();
+
+    if (!Array.isArray(rows) || rows.length === 0)
+    {
+        throw new ValidationError("Podaj rzędy i liczbę miejsc w każdym rzędzie");
+    }
+
+    const rowNumbers = new Set<number>();
+    let totalSeats = 0;
+
+    for (const row of rows)
+    {
+        if (!Number.isInteger(row?.number) || row.number < 1 || row.number > 2147483647)
+        {
+            throw new ValidationError("Numer rzędu musi być dodatnią liczbą całkowitą");
+        }
+
+        if (!Number.isInteger(row.seatCount) || row.seatCount < 1)
+        {
+            throw new ValidationError("Liczba miejsc w rzędzie musi być dodatnią liczbą całkowitą");
+        }
+
+        if (rowNumbers.has(row.number))
+        {
+            throw new ValidationError("Numery rzędów w sektorze nie mogą się powtarzać");
+        }
+
+        rowNumbers.add(row.number);
+        totalSeats += row.seatCount;
+
+        if (totalSeats > 10000)
+        {
+            throw new ValidationError("Jednorazowo można dodać maksymalnie 10000 miejsc");
+        }
+    }
+
+    const seats: newSeat[] = [];
+    let seatNumber = 0;
+
+    for (const row of [...rows].sort((first, second) => first.number - second.number))
+    {
+        for (let i = 0; i < row.seatCount; i++)
+        {
+            seatNumber++;
+            seats.push({hallId, sector, row: row.number, seatNumber});
+        }
+    }
+
+    await seatRepository.createSeats(hallId, sector, seats);
+
+    return {createdSeats: seats.length};
+}
 
 
 export async function createHallService(

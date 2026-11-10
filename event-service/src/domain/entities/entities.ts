@@ -22,6 +22,11 @@ export interface Seat {
 
 export type newSeat = Omit<Seat, "id" | "createdAt">
 
+export interface SeatRow {
+    number: number;
+    seatCount: number;
+}
+
 export interface Hall {
     id: number | null;
     name: string;
