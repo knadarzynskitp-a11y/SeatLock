@@ -100,11 +100,11 @@
       build: ./event-service
       command: npm run migrate:up
       environment:
-        PGHOST: db
+        PGHOST: event-db
         PGPORT: 5432
-        PGUSER: ${DB_USER}
-        PGPASSWORD: ${DB_PASSWORD}
-        PGDATABASE: ${DB_NAME}
+        PGUSER: postgres
+        PGPASSWORD: ${EVENT_DB_PASSWORD}
+        PGDATABASE: event
       depends_on:
         event-db:
           condition: service_healthy
