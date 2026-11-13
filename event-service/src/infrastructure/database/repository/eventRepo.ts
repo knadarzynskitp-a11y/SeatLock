@@ -1,3 +1,4 @@
+import type { Event } from '../../../domain/entities/entities.js'
 import { NotFoundError } from '../../../application/errors/errors.js'
 import type { IeventRepository } from '../../../application/ports/eventPorts.js'
 import { pool } from '../db.js'
@@ -14,5 +15,13 @@ export const eventRepository: IeventRepository = {
         {
             throw new NotFoundError('Sala nie istnieje')
         }
+    },
+
+    async takeEvents() {
+        const result = await pool.query<Event>(
+            `SELECT * FROM events`
+        )
+
+        return result.rows
     }
 }

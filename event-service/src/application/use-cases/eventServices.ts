@@ -61,3 +61,8 @@ export async function createEventService(
 
     await eventRepository.createEvent(event)
 }
+
+export async function takeEventsService(eventRepository: IeventRepository)
+{
+    return await eventRepository.takeEvents()
+}
