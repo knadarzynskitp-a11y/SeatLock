@@ -11,6 +11,21 @@ export interface Event {
 
 export type newEvent = Omit<Event, "id" | "createdAt">
 
+export type EventListItem = Pick<Event, "id" | "name" | "price" | "startDate"> & {
+    hallName: string;
+    hallCity: string;
+}
+
+export type EventDetails = Omit<Event, "createdAt"> & {
+    hallName: string;
+    hallCountry: string;
+    hallZipCode: string;
+    hallCity: string;
+    hallStreet: string;
+    hallNumber: string | null;
+    hallInstitution: string | null;
+}
+
 export interface Seat {
     id: number | null;
     hallId: number;
