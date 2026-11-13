@@ -4,4 +4,5 @@ export interface IeventRepository
 {
     createEvent(event: newEvent): Promise<void>
     takeEvents(): Promise<Event[]>
+    takeEventById(eventId: number): Promise<Event | null>
 }

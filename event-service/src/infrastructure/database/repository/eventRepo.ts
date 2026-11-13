@@ -6,7 +6,7 @@ import { pool } from '../db.js'
 export const eventRepository: IeventRepository = {
     async createEvent(event) {
         const result = await pool.query(
-            `INSERT INTO events (name, price, description, startDate, endDate, hallId)
+            `INSERT INTO events (name, price, description, "startDate", "endDate", "hallId")
              SELECT $1, $2, $3, $4, $5, id FROM halls WHERE id = $6 FOR KEY SHARE`,
             [event.name, event.price, event.description, event.startDate, event.endDate, event.hallId]
         )
@@ -23,5 +23,14 @@ export const eventRepository: IeventRepository = {
         )
 
         return result.rows
+    },
+
+    async takeEventById(eventId) {
+        const result = await pool.query<Event>(
+            `SELECT * FROM events WHERE id=$1`,
+            [eventId]
+        )
+
+        return result.rows[0] ?? null
     }
 }

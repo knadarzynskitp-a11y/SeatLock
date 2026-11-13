@@ -1,5 +1,5 @@
 import type { newEvent } from '../../domain/entities/entities.js'
-import { ValidationError } from '../errors/errors.js'
+import { NotFoundError, ValidationError } from '../errors/errors.js'
 import type { IeventRepository } from '../ports/eventPorts.js'
 
 export async function createEventService(
@@ -65,4 +65,21 @@ export async function createEventService(
 export async function takeEventsService(eventRepository: IeventRepository)
 {
     return await eventRepository.takeEvents()
+}
+
+export async function takeEventByIdService(eventId: number, eventRepository: IeventRepository)
+{
+    if (!Number.isInteger(eventId) || eventId < 1 || eventId > 2147483647)
+    {
+        throw new ValidationError('Podaj prawidłowe ID wydarzenia')
+    }
+
+    const event = await eventRepository.takeEventById(eventId)
+
+    if (!event)
+    {
+        throw new NotFoundError('Wydarzenie nie istnieje')
+    }
+
+    return event
 }
